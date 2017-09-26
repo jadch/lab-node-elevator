@@ -10,9 +10,25 @@ class Elevator {
   }
 
   start() {
-    this.intervalID = setInterval( () => {
-      this.update()
-    }, 1000)
+    // ******* Bonus *******
+    // The Elevator will automatically keep on serving all the people in the waiting list
+    // Algo: go the highest destination floor in the passenger list, dropping off or picking up people at each floor
+    while (this.requests.length != 0 ) { //  <= Equal to => (this.passengers.length != 0 && this.waitingList.length != 0)
+      let max_floor = Math.max(...this.requests)
+      if (this.floor < max_floor) {
+        do {
+          this.floorUp()
+        } while (this.floor < max_floor)
+      }
+      else {
+        do {
+          this.floorDown()
+        } while (this.floor > max_floor)
+      }
+    }
+    if (this.requests.length === 0) {
+      console.log('My job is done here')
+    }
   }
 
   stop() {
@@ -28,7 +44,9 @@ class Elevator {
       if (person.originFloor === this. floor) {
         this.passengers.push(person)
         this._deleteFromWaitingList(person.name)
-        this.requests.push(person.destinationFloor)
+        if (this.requests.indexOf(person.destinationFloor) === -1) {
+          this.requests.push(person.destinationFloor)
+        }
         console.log(`${person.name} has just entered the elevator on floor ${this.floor}`)
       }
     })
@@ -44,22 +62,30 @@ class Elevator {
   }
 
   floorUp() {
-    if (this.floor < this.MAXFLOOR) this.floor += 1
-    console.log(this.floor)
-    this._passengersEnter()
-    this._passengersLeave()
+    if (this.floor < this.MAXFLOOR) {
+      this.floor += 1
+      console.log('Floor ', this.floor)
+      this._passengersEnter()
+      this._passengersLeave()
+      this._deleteFromRequest(this.floor)
+    }
   }
 
   floorDown() {
-    if (this.floor > 0) this.floor -= 1
-    console.log(this.floor)
-    this._passengersEnter()
-    this._passengersLeave()
+    if (this.floor > 0) {
+      this.floor -= 1
+      console.log('Floor ', this.floor)
+      this._passengersEnter()
+      this._passengersLeave()
+      this._deleteFromRequest(this.floor)
+    } 
   }
 
   call (person) {
     this.waitingList.push(person)
-    this.requests.push(person.originFloor)
+    if (this.requests.indexOf(person.originFloor) === -1) {
+      this.requests.push(person.originFloor)
+    }
   }
 
   log() {
@@ -82,6 +108,10 @@ class Elevator {
         return i
       }
     }
+  }
+
+  _deleteFromRequest (floor) {
+    if (this.requests.indexOf(floor) != -1) this.requests.splice(this.requests.indexOf(floor), 1)
   }
 }
 
